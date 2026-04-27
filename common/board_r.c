@@ -538,7 +538,7 @@ static int initr_sunxi_plat(void)
 #ifdef CONFIG_RECOVERY_KEY
 	check_recovery_key();
 #endif
-	sunxi_flashmap_init();
+	//sunxi_flashmap_init();
 #if defined(CONFIG_SUNXI_SPI)
 	init_spi_all();
 #endif

@@ -22,6 +22,14 @@
 char *spd_name[] = {"DS26/SDR12", "HSSDR52/SDR25", "HSDDR52/DDR50", "HS200/SDR104", "HS400"};
 int new_spd_name[] = {MMC_LEGACY, MMC_HS_52, MMC_DDR_52, MMC_HS_200, MMC_HS_400};
 
+int sunxi_flashmap_offset(enum flash_type flash_name, enum region_flash_type region_name) {
+    return 0; // 返回 0 即可
+}
+
+int sunxi_flashmap_size(enum flash_type flash_name, enum region_flash_type region_name) {
+    return 0; // 返回 0 即可
+}
+
 static const char hs200_tuning_blk_4b[64] = {
 	/*hs200/uhs*/
 	0xff, 0x0f, 0xff, 0x00, 0xff, 0xcc, 0xc3, 0xcc,

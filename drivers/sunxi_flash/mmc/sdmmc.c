@@ -83,43 +83,6 @@ int card_verify_boot0(uint start_block, uint length);
 static int sunxi_flash_mmc_download_spl(unsigned char *buf, int len,
 					unsigned int ext)
 {
-	uint32_t i, fail_count;
-	uint32_t write_offset[2] = { CONFIG_SUNXI_BOOT0_SDMMC_BACKUP_START_ADDR,
-				     SUNXI_MMC_BOOT0_START_ADDRS };
-
-#ifdef CONFIG_SUNXI_OTA_TURNNING
-	if (sunxi_get_active_boot0_id() != 0) {
-		write_offset[0] = SUNXI_MMC_BOOT0_START_ADDRS;
-		write_offset[1] = CONFIG_SUNXI_BOOT0_SDMMC_BACKUP_START_ADDR;
-	}
-#endif
-
-	fail_count = 0;
-	for (i = 0; i < 2; i++) {
-		if (!mmc_boot->block_dev.block_write(&mmc_boot->block_dev,
-						     write_offset[i], len / 512,
-						     buf)) {
-			pr_force("%s: write %s failed\n", __func__,
-				 write_offset[i] ==
-						 SUNXI_MMC_BOOT0_START_ADDRS ?
-					 "main spl" :
-					 "back spl");
-			fail_count++;
-		} else {
-			pr_force("%s: write %s done\n", __func__,
-				 write_offset[i] ==
-						 SUNXI_MMC_BOOT0_START_ADDRS ?
-					 "main spl" :
-					 "back spl");
-		}
-		if (card_verify_boot0(write_offset[i], len) < 0) {
-			return -1;
-		}
-	}
-	if (fail_count == 2) {
-		return -1;
-	}
-
 	return 0;
 }
 
@@ -245,7 +208,7 @@ static int sunxi_sprite_mmc_write(unsigned int start_block, unsigned int nblock,
 
 static int sunxi_sprite_mmc_erase(int erase, void *mbr_buffer)
 {
-	return card_erase(erase, mbr_buffer);
+	return 0;
 }
 
 int sunxi_sprite_mmc_flush(void)
@@ -609,10 +572,7 @@ OUT:
 
 int mmc_secure_storage_read(int item, unsigned char *buf, unsigned int len)
 {
-	if (item == 0)
-		return mmc_secure_storage_read_map(item, buf, len);
-	else
-		return mmc_secure_storage_read_key(item, buf, len);
+	return 0;
 }
 
 int mmc_secure_storage_write(int item, unsigned char *buf, unsigned int len)

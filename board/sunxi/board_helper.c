@@ -313,40 +313,6 @@ int sunxi_str_replace_all(char *dest_buf, char *goal, char *replace)
 
 static int write_recovery_msg_to_misc(char *recovery_msg)
 {
-	u32 misc_offset = 0;
-	char misc_args[2048];
-	static struct bootloader_message *misc_message;
-	int ret;
-
-	memset(misc_args, 0x0, 2048);
-	misc_message = (struct bootloader_message *)misc_args;
-
-	misc_offset = sunxi_partition_get_offset_byname("misc");
-	if (!misc_offset) {
-		printf("no misc partition\n");
-		return 0;
-	}
-	ret = sunxi_flash_read(misc_offset, 2048 / 512, misc_args);
-	if (!ret) {
-		printf("error: read misc partition\n");
-		return 0;
-	}
-
-	if (!strcmp("ir-or-key-recovery", (const char *)recovery_msg)) {
-		strcpy(misc_message->command, "boot-recovery");
-	} else if (!strcmp("ir-factory", (const char *)recovery_msg)) {
-		strcpy(misc_message->command, "boot-recovery");
-		strcpy(misc_message->recovery,
-		       "recovery\n--wipe_data\n--locale=zh_CN\n");
-	} else if (!strcmp("ir-efex", (const char *)recovery_msg)) {
-		strcpy(misc_message->command, "efex");
-	} else if (!strcmp("sysrecovery", (const char *)recovery_msg)) {
-		strcpy(misc_message->command, "sysrecovery");
-		/*    strcpy(misc_message->recovery, "sysrecovery"); */
-	} else if (!strcmp("erase_misc", (const char *)recovery_msg)) {
-		memset(misc_args, 0x0, 2048);
-	}
-	sunxi_flash_write(misc_offset, 2048 / 512, misc_args);
 	return 0;
 }
 

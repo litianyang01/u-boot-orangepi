@@ -256,39 +256,6 @@ static int bootm_find_os(cmd_tbl_t *cmdtp, int flag, int argc,
 #ifdef CONFIG_OF_SEPARATE
 int use_android_image_dtb(void)
 {
-	int err;
-	void *buf;
-	u32 new_fdt_totalsize;
-	ulong dtb_data;
-	ulong dtb_len;
-	buf = map_sysmem(images.os.start, 0);
-	if (buf && genimg_get_format(buf) == IMAGE_FORMAT_ANDROID) {
-		if (android_image_get_dtb(buf, &dtb_data, &dtb_len)) {
-			puts("Cannot get android dtb\n");
-			return -1;
-		}
-
-		err = fdt_check_header((void *)dtb_data);
-		if (err < 0) {
-			printf("libfdt fdt_check_header(): %s\n", fdt_strerror(err));
-			return -1;
-		} else {
-			debug("android fdt check ok, fdt size %lu\n", dtb_len);
-		}
-
-		new_fdt_totalsize = fdt_totalsize(dtb_data);
-		if (new_fdt_totalsize > (gd->fdt_size)) {
-			printf("new fdt(%u) biger than now fdt(%lu)\n",
-			 new_fdt_totalsize, gd->fdt_size);
-			return -1;
-		}
-
-		memcpy((void *)gd->fdt_blob, (void *)dtb_data, new_fdt_totalsize);
-
-		/* fdt_size is the space reserved by uboot for fdt, now set to new fdt */
-		fdt_set_totalsize((void *)gd->fdt_blob, gd->fdt_size);
-	}
-
 	return 0;
 }
 #endif

@@ -886,7 +886,6 @@ static int display_enable(struct display_state *state)
 	const struct sunxi_drm_crtc_funcs *crtc_funcs = crtc->funcs;
 	/*struct drm_framebuffer *fb = NULL;*/
 	/*struct video_priv *uc_priv = dev_get_uclass_priv(state->drm->dev);*/
-
 	if (!state->is_init)
 		return -EINVAL;
 

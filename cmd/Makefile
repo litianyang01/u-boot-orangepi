@@ -19,7 +19,6 @@ obj-$(CONFIG_CMD_AB_SELECT) += ab_select.o
 obj-$(CONFIG_CMD_AES) += aes.o
 obj-$(CONFIG_CMD_ADC) += adc.o
 obj-$(CONFIG_CMD_ARMFLASH) += armflash.o
-obj-y += blk_common.o ufs.o
 obj-$(CONFIG_SOURCE) += source.o
 obj-$(CONFIG_CMD_SOURCE) += source.o
 obj-$(CONFIG_CMD_BDI) += bdinfo.o
@@ -141,7 +140,7 @@ obj-$(CONFIG_CMD_UNIVERSE) += universe.o
 obj-$(CONFIG_CMD_UNZIP) += unzip.o
 obj-$(CONFIG_CMD_LZMADEC) += lzmadec.o
 
-obj-$(CONFIG_CMD_USB) += usb.o disk.o
+# obj-$(CONFIG_CMD_USB) += usb.o disk.o
 obj-$(CONFIG_CMD_FASTBOOT) += cmd_fastboot.o
 obj-$(CONFIG_CMD_FS_UUID) += fs_uuid.o
 
@@ -169,7 +168,6 @@ obj-$(CONFIG_CMD_SUNXI_TIMER) += sunxi_timer.o
 obj-$(CONFIG_CMD_SUNXI_CLK) += sunxi_clk.o
 obj-$(CONFIG_CMD_SUNXI_GPIO) += sunxi_gpio.o
 obj-$(CONFIG_CMD_SUNXI_SPRITE) += sunxi_sprite.o
-obj-$(CONFIG_CMD_SUNXI_FLASH) += sunxi_flash.o
 ccflags-$(CONFIG_CMD_SUNXI_SSPI) += -I$(src)/../drivers/spi/
 obj-$(CONFIG_CMD_SUNXI_SSPI) += sunxi_sspi.o
 obj-$(CONFIG_SUNXI_RTOS) += sunxi_rtos.o
@@ -183,9 +181,6 @@ obj-$(CONFIG_CMD_SUNXI_BOOTR) += sunxi_bootr.o
 obj-$(CONFIG_CMD_SUNXI_BOOTRV) += sunxi_bootrv.o
 obj-${CONFIG_CMD_SUNXI_BOOT_HYPER} += sunxi_hyper.o
 obj-$(CONFIG_CMD_SUNXI_HWSPINLOCK) += sunxi_hwspinlock.o
-ifdef CONFIG_SUNXI_SECURE_STORAGE
-obj-y += sunxi_svudata.o
-endif
 obj-$(CONFIG_CMD_SUNXI_AUTO_FEL) += sunxi_auto_fel.o
 
 obj-$(CONFIG_CMD_PWM_LED) += cmd_pwm_led.o

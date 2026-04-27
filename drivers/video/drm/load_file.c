@@ -122,6 +122,8 @@ struct file_info_t *load_file(char *name, char *part_name)
 		goto OUT;
 	}
 
+	return create_boot_bmp_file();
+
 	strncpy(name, "/boot/boot.bmp", 15);
 
 	argv[0] = "ext4size";

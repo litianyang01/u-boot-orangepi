@@ -115,13 +115,11 @@ struct sunxi_drm_hdmi {
 };
 
 const struct drm_display_mode _sunxi_hdmi_default_modes[1] = {
-	{ DRM_MODE("1920x1080", DRM_MODE_TYPE_DRIVER, 148500,
-		1920, 2008, 2052, 2200, 0, 1080, 1084, 1089, 1125, 0,
+	/* 1280x720@60Hz: universally supported by all HDMI monitors,
+	 * used as safe fallback when EDID cannot be read. */
+	{ DRM_MODE("1280x720", DRM_MODE_TYPE_DRIVER, 74250,
+		1280, 1390, 1430, 1650, 0, 720, 725, 730, 750, 0,
 		DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC)},
-
-	/* { DRM_MODE("3840x2160", DRM_MODE_TYPE_DRIVER, 594000,
-		3840, 4016, 4104, 4400, 0, 2160, 2168, 2178, 2250, 0,
-		DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC)}, */
 };
 
 /*******************************************************************************
@@ -814,7 +812,6 @@ int _sunxi_drm_hdmi_mode_set(struct sunxi_drm_connector *conn,
 	}
 
 	memcpy(&hdmi->drm_mode, &conn_state->mode, sizeof(struct drm_display_mode));
-
 	ret = sunxi_hdmi_set_disp_mode(&hdmi->drm_mode);
 	if (ret != 0) {
 		hdmi_err("drm mode set convert failed\n");
@@ -866,17 +863,48 @@ int _sunxi_drm_hdmi_get_modes(struct sunxi_drm_connector *conn,
 		hdmi_trace("drm hdmi get mode num: %d\n", mode_num);
 	}
 
+	/* _sunxi_drv_hdmi_read_edid() ignores I2C errors and always stores the
+	 * buffer; drm_add_edid_modes() then rejects it as invalid (e.g. the
+	 * DDC bus may not have settled after HPD yet).  Retry once with a
+	 * short delay to give the monitor time to respond. */
+	if (mode_num == 0 && sunxi_hdmi_get_hpd()) {
+		kfree(hdmi->hdmi_ctrl.drv_edid_data);
+		hdmi->hdmi_ctrl.drv_edid_data = NULL;
+		mdelay(500);
+		_sunxi_drv_hdmi_read_edid(hdmi);
+		edid = hdmi->hdmi_ctrl.drv_edid_data;
+		if (!IS_ERR_OR_NULL(edid)) {
+			mode_num += drm_add_edid_modes(conn, edid);
+			hdmi_inf("drm hdmi edid retry got %d modes\n", mode_num);
+		}
+	}
+
 	if (mode_num == 0) {
 		memcpy(sel_mode, &_sunxi_hdmi_default_modes[0],
 				sizeof(struct drm_display_mode));
-		hdmi_trace("drm hdmi use default mode\n");
+		hdmi_inf("drm hdmi EDID unavailable, using safe default mode\n");
 		goto exit;
 	}
 
-	list_for_each_entry(mode, &conn->probed_modes, head) {
-		if (mode->type & DRM_MODE_TYPE_PREFERRED) {
+	{
+		int preferred_found = 0;
+
+		list_for_each_entry(mode, &conn->probed_modes, head) {
+			if (mode->type & DRM_MODE_TYPE_PREFERRED) {
+				memcpy(sel_mode, mode, sizeof(struct drm_display_mode));
+				preferred_found = 1;
+				break;
+			}
+		}
+		/* EDID version <= 1.3 without PREFERRED_TIMING bit sets no
+		 * PREFERRED flag, leaving sel_mode zeroed and producing garbage
+		 * HDMI timing. Fall back to the first probed mode instead. */
+		if (!preferred_found && !list_empty(&conn->probed_modes)) {
+			mode = list_first_entry(&conn->probed_modes,
+						struct drm_display_mode, head);
 			memcpy(sel_mode, mode, sizeof(struct drm_display_mode));
-			break;
+			hdmi_inf("drm hdmi no preferred mode, fallback to first: %dx%d\n",
+				 sel_mode->hdisplay, sel_mode->vdisplay);
 		}
 	}
 

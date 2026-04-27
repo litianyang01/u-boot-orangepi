@@ -836,12 +836,14 @@ int board_late_init(void)
 			p_fastlogo->reserve_memory(p_fastlogo);
 		}
 #endif
+
+#ifdef CONFIG_SUNXI_UFS
 extern int sunxi_ufs_global_init(void);
 		sunxi_ufs_global_init();
+#endif
 	}
 	return 0;
 }
-
 
 uint sunxi_generate_checksum(void *buffer, uint length, uint div, uint src_sum)
 {
@@ -890,9 +892,9 @@ void reset_misc(void)
   */
 void board_quiesce_devices(void)
 {
-	sunxi_flash_flush();
+	//sunxi_flash_flush();
 	/*modify 2 for nor to finally exit*/
-	sunxi_flash_exit(2);
+	//sunxi_flash_exit(2);
 #ifdef CONFIG_SUNXI_DMA
 	sunxi_dma_exit();
 #endif

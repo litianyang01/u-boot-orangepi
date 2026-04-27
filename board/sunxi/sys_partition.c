@@ -435,7 +435,7 @@ int sunxi_partition_get_info(const char *part_name, disk_partition_t *info)
 	if (get_boot_work_mode() == WORK_MODE_CARD_PRODUCT ||
 		storage_type == STORAGE_EMMC || storage_type == STORAGE_EMMC3
 		|| storage_type == STORAGE_SD || storage_type == STORAGE_EMMC0) {
-		logic_offset = sunxi_flashmap_logical_offset(FLASHMAP_SDMMC, LINUX_LOGIC_OFFSET);
+		//logic_offset = sunxi_flashmap_logical_offset(FLASHMAP_SDMMC, LINUX_LOGIC_OFFSET);
 #ifdef CONFIG_SUNXI_UFS
 	} else if (storage_type == STORAGE_UFS) {
 		logic_offset = sunxi_flashmap_logical_offset(FLASHMAP_UFS, LINUX_LOGIC_OFFSET);

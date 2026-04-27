@@ -273,7 +273,7 @@ struct periph_init_data sunxi_periphs_init[] = {
 	{"mipi_dsi_combphy0", CLK_SET_RATE_PARENT,        combphy0_parents,            ARRAY_SIZE(combphy0_parents),        &sunxi_clk_periph_mipi_dsi_combphy0},
 	{"mipi_dsi_combphy1", CLK_SET_RATE_PARENT,        combphy1_parents,            ARRAY_SIZE(combphy1_parents),        &sunxi_clk_periph_mipi_dsi_combphy1},
 	{"edp",               CLK_SET_RATE_PARENT,        edp_parents,                 ARRAY_SIZE(edp_parents),             &sunxi_clk_periph_edp            },
-	{"hdmi_tv",           CLK_SET_RATE_PARENT,        hdmi_tv_parents,             ARRAY_SIZE(hdmi_tv_parents),         &sunxi_clk_periph_hdmi_tv        },
+	{"hdmi_tv",           CLK_SET_RATE_PARENT | CLK_GET_RATE_NOCACHE, hdmi_tv_parents, ARRAY_SIZE(hdmi_tv_parents), &sunxi_clk_periph_hdmi_tv},
 	{"hdmi_gate",                  0,                    hosc_parents,             ARRAY_SIZE(hosc_parents),            &sunxi_clk_periph_hdmi_gate      },
 	{"hdmi_sfr",          CLK_SET_RATE_PARENT,        hdmi_sfr_parents,            ARRAY_SIZE(hdmi_sfr_parents),        &sunxi_clk_periph_hdmi_sfr       },
 	{"hdmi_hdcp_rst",              0,                    hosc_parents,             ARRAY_SIZE(hosc_parents),            &sunxi_clk_periph_hdmi_hdcp_rst  },
@@ -353,7 +353,7 @@ struct periph_init_data *sunxi_clk_get_periph_cpus_by_name(const char *name)
 
 static int clk_video_set_rate(struct clk_hw *hw, unsigned long rate, unsigned long parent_rate)
 {
-	unsigned long factor_m = 0;
+	unsigned long factor_m = 0, factor_n = 0;
 	unsigned long reg;
 	struct sunxi_clk_periph *periph = to_clk_periph(hw);
 	struct sunxi_clk_periph_div *divider = &periph->divider;
@@ -362,17 +362,24 @@ static int clk_video_set_rate(struct clk_hw *hw, unsigned long rate, unsigned lo
 	div = DIV_ROUND_UP_ULL(parent_rate, rate);
 
 	if (!div) {
-		div_m = 0;
+		factor_m = 0;
+		factor_n = 0;
 	} else {
 		div_m = 1 << divider->mwidth;
 
+		/* use N to bring div into M range, same as __sunxi_clk_periph_set_rate */
+		while (div > div_m && factor_n < (unsigned long)((1 << divider->nwidth) - 1)) {
+			div = (div + 1) >> 1;
+			factor_n++;
+		}
 		factor_m = (div > div_m ? div_m : div) - 1;
-		div_m = factor_m;
 	}
 
 	reg = periph_readl(periph, divider->reg);
 	if (divider->mwidth)
-		reg = SET_BITS(divider->mshift, divider->mwidth, reg, div_m);
+		reg = SET_BITS(divider->mshift, divider->mwidth, reg, factor_m);
+	if (divider->nwidth)
+		reg = SET_BITS(divider->nshift, divider->nwidth, reg, factor_n);
 	periph_writel(periph, reg, divider->reg);
 
 	return 0;

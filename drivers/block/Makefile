@@ -6,7 +6,7 @@
 obj-$(CONFIG_$(SPL_)BLK) += blk-uclass.o
 
 ifndef CONFIG_$(SPL_)BLK
-obj-y += blk_legacy.o vblk.o
+obj-y += blk_legacy.o
 endif
 
 obj-$(CONFIG_AW_BLK) += blk_sunxi.o

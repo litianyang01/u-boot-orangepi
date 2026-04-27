@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0+
 SHELL:=/bin/bash
-VERSION = 2018
-PATCHLEVEL = 07
+VERSION = U2X
+PATCHLEVEL = 01
 SUBLEVEL =
-EXTRAVERSION =
+EXTRAVERSION = -A733-$(shell date "+%Y%m%d-%H%M%S")
 NAME =
 
 # *DOCUMENTATION*
